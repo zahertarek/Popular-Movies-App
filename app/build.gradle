@@ -17,7 +17,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
         buildTypes.each {
-            it.buildConfigField 'String', 'API_KEY', '"08524ef03ef7475aeebd2618e057aecd"'
+            it.buildConfigField 'String', 'API_KEY', '"xxxxxxx"'
         }
     }
     repositories {
