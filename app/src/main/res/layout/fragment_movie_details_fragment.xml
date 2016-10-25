@@ -1,0 +1,201 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" >
+
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MovieDetailsFragment">
+
+    <!-- TODO: Update blank fragment layout -->
+    <ImageView
+        android:id="@+id/movie_image"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentLeft="true"
+        android:minHeight="300dp"
+        android:layout_width="match_parent"
+        android:scaleType="fitXY"
+        android:paddingBottom="16dp"
+        android:layout_height="wrap_content" />
+
+    <ImageView
+        android:id="@+id/movie_image_frame"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingTop="200dp"
+        android:paddingBottom="30dp"
+        android:layout_centerHorizontal="true"
+        />
+    <ImageButton android:id="@+id/favorite"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:src="@android:drawable/btn_star_big_on"
+        android:background="#00ffffff"
+        android:layout_below="@id/movie_image_frame"
+        android:layout_centerHorizontal="true"
+
+        />
+
+
+    <TextView
+        android:id="@+id/title_label"
+        android:text="Title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/favorite"
+        android:paddingLeft="5dp"
+        android:textSize="20dp"
+        android:textColor="#000000"
+
+        />
+
+    <TextView
+        android:id="@+id/movie_title"
+        android:layout_below="@+id/title_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="20dp"
+        android:paddingLeft="5dp"
+
+        />
+
+    <TextView
+        android:id="@+id/release_label"
+        android:text="Release Date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/movie_title"
+        android:paddingLeft="5dp"
+        android:textSize="20dp"
+        android:textColor="#000000"
+
+        />
+
+    <TextView
+        android:id="@+id/release_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="20dp"
+        android:layout_below="@+id/release_label"
+        android:paddingLeft="5dp"
+        />
+
+    <TextView
+        android:id="@+id/ratings_label"
+        android:text="Ratings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/release_date"
+        android:paddingLeft="5dp"
+        android:textSize="20dp"
+        android:textColor="#000000"
+
+        />
+
+    <TextView
+        android:id="@+id/vote_average"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="20dp"
+        android:layout_below="@+id/ratings_label"
+        android:paddingLeft="5dp"
+        android:textColor="#000000"
+        />
+    <TextView
+        android:text="/10.0"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/vote_average"
+        android:layout_alignTop="@+id/vote_average"
+        />
+
+    <TextView
+        android:id="@+id/description_label"
+        android:text="Description"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/vote_average"
+        android:paddingLeft="5dp"
+        android:textSize="20dp"
+        android:textColor="#000000"
+
+
+        />
+
+    <TextView
+        android:id="@+id/description"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="20dp"
+        android:paddingLeft="5dp"
+        android:layout_below="@id/description_label"
+        />
+
+
+    <View
+        android:layout_below="@+id/description"
+        android:id="@+id/separator"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"/>
+
+    <TextView
+        android:id="@+id/trailer_label"
+        android:text="Trailer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/separator"
+        android:paddingLeft="5dp"
+        android:textSize="20dp"
+        android:textColor="#000000"
+        />
+<HorizontalScrollView
+    android:id="@+id/horizontal_scroll_view"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_below="@+id/trailer_label">
+    <LinearLayout
+        android:id="@+id/trailers_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+
+        >
+    </LinearLayout>
+</HorizontalScrollView>
+
+    <View
+        android:layout_below="@+id/horizontal_scroll_view"
+        android:id="@+id/separator_2"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"/>
+
+    <TextView
+        android:id="@+id/reviews_label"
+        android:text="Reviews"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/separator_2"
+        android:paddingLeft="5dp"
+        android:textSize="20dp"
+        android:textColor="#000000"
+        />
+
+    <LinearLayout
+        android:id="@+id/reviews"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_below="@+id/reviews_label"
+        >
+
+    </LinearLayout>
+
+</RelativeLayout>
+
+
+
+    </ScrollView>
