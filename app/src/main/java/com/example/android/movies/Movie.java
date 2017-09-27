@@ -2,12 +2,12 @@ package com.example.android.movies;
 
 import java.io.Serializable;
 
-import io.realm.RealmObject;
+
 
 /**
  * Created by zaher on 8/31/16.
  */
-public class Movie extends RealmObject implements Serializable{
+public class Movie  implements Serializable{
 
     private long id;
 

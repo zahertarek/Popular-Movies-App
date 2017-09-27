@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.3"
+    buildToolsVersion '25.0.0'
 
     defaultConfig {
         applicationId "com.example.android.movies"
@@ -17,7 +17,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
         buildTypes.each {
-            it.buildConfigField 'String', 'API_KEY', '"xxxxxxx"'
+            it.buildConfigField 'String', 'API_KEY', '"XXXXXX"'
         }
     }
     repositories {
@@ -34,5 +34,4 @@ dependencies {
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.google.code.gson:gson:2.7'
     compile 'com.android.support:design:23.3.0'
-    compile 'io.realm:realm-android:0.84.1'
 }

@@ -1,7 +1,10 @@
 package com.example.android.movies;
 
 
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -31,9 +34,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 
-import io.realm.Realm;
-import io.realm.RealmConfiguration;
-
 
 /**
  * A simple {@link Fragment} subclass.
@@ -43,7 +43,8 @@ public class MovieDetailsFragment extends Fragment {
     List<Trailer> trailers;
     List<Review> reviews;
     Result result;
-    Realm realm;
+    SQLiteDatabase db;
+
 
 
     public MovieDetailsFragment() {
@@ -57,7 +58,8 @@ public class MovieDetailsFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_movie_details_fragment, container, false);
-
+        FavouriteMovieDbHelper helper = new FavouriteMovieDbHelper(getContext());
+        db = helper.getWritableDatabase();
 
 
         //Getting the selected Movie Object
@@ -71,14 +73,9 @@ public class MovieDetailsFragment extends Fragment {
         final int id;
 
         if(getArguments().getBoolean("Favorites")){
-           id = (int) getArguments().getLong("Movie");
-            RealmConfiguration realmConfig = new RealmConfiguration.Builder(getContext()).build();
-            Realm.setDefaultConfiguration(realmConfig);
+            id = (int) getArguments().getLong("Movie");
 
-            // Get a Realm instance for this thread
-            realm = Realm.getDefaultInstance();
-
-            Movie movie = realm.where(Movie.class).equalTo("id",id).findFirst();
+            Movie movie = getMovieFromDb(id);
 
             title = movie.getTitle();
             releaseDate = movie.getReleaseDate();
@@ -89,13 +86,13 @@ public class MovieDetailsFragment extends Fragment {
 
         }else{
             result = (Result) getArguments().getSerializable("Movie");
-             title = result.getTitle();
-             releaseDate = result.getReleaseDate();
-             voteAverage = ""+result.getVoteAverage();
-             overview = result.getOverview();
-             backdropPath = result.getBackdropPath();
-             posterPath = result.getPosterPath();
-             id =(int) result.getId();
+            title = result.getTitle();
+            releaseDate = result.getReleaseDate();
+            voteAverage = ""+result.getVoteAverage();
+            overview = result.getOverview();
+            backdropPath = result.getBackdropPath();
+            posterPath = result.getPosterPath();
+            id =(int) result.getId();
 
 
         }
@@ -125,13 +122,9 @@ public class MovieDetailsFragment extends Fragment {
 
         // check to set the correct icon on/off
 
-        RealmConfiguration realmConfig = new RealmConfiguration.Builder(getContext()).build();
-        Realm.setDefaultConfiguration(realmConfig);
 
-        // Get a Realm instance for this thread
-         realm = Realm.getDefaultInstance();
 
-        Movie movie = realm.where(Movie.class).equalTo("id",id).findFirst();
+        Movie movie = getMovieFromDb(id);
 
         if(movie==null)
             star.setImageResource(android.R.drawable.btn_star_big_off);
@@ -141,32 +134,20 @@ public class MovieDetailsFragment extends Fragment {
             public void onClick(View view) {
 
                 //check if this movie is in favourites and then change the icon and do the action
-                final Movie movie = realm.where(Movie.class).equalTo("id",id).findFirst();
-
+                final Movie movie = getMovieFromDb(id);
                 if(movie == null ){
-                final Movie favoriteMovie = new Movie();
-                favoriteMovie.setTitle(title);
-                favoriteMovie.setBackdropPath(backdropPath);
-                favoriteMovie.setPosterPath(posterPath);
-                favoriteMovie.setId(id);
-                favoriteMovie.setOverview(overview);
-                favoriteMovie.setVoteAverage(Double.parseDouble(voteAverage));
+                    final Movie favoriteMovie = new Movie();
+                    favoriteMovie.setTitle(title);
+                    favoriteMovie.setBackdropPath(backdropPath);
+                    favoriteMovie.setPosterPath(posterPath);
+                    favoriteMovie.setId(id);
+                    favoriteMovie.setOverview(overview);
+                    favoriteMovie.setVoteAverage(Double.parseDouble(voteAverage));
 
-                realm.executeTransaction(new Realm.Transaction() {
-                    @Override
-                    public void execute(Realm realm) {
-                        Movie RealMovie = realm.copyToRealm(favoriteMovie);
-                    }
-
-                });
+                    insertMovie(favoriteMovie);
                     star.setImageResource(android.R.drawable.btn_star_big_on);
                 }else{
-                    realm.executeTransaction(new Realm.Transaction() {
-                        @Override
-                        public void execute(Realm realm) {
-                            movie.removeFromRealm();
-                        }
-                    });
+                    db.delete(FavouritesContract.FavouriteMovieEntry.TABLE_NAME, FavouritesContract.FavouriteMovieEntry.COLUMN_NAME_ID+"="+movie.getId(),null);
                     star.setImageResource(android.R.drawable.btn_star_big_off);
                 }
                 MoviesFragment moviesFragment = (MoviesFragment)getActivity().getSupportFragmentManager().findFragmentById(R.id.movies_fragment);
@@ -199,8 +180,8 @@ public class MovieDetailsFragment extends Fragment {
                 Uri uri;
                 URL url;
 
-                    uri = Uri.parse("http://api.themoviedb.org/3/movie/"+strings[0]+"/videos").buildUpon().appendQueryParameter("api_key", BuildConfig.API_KEY).build();
-                    url = new URL(uri.toString());
+                uri = Uri.parse("http://api.themoviedb.org/3/movie/"+strings[0]+"/videos").buildUpon().appendQueryParameter("api_key", BuildConfig.API_KEY).build();
+                url = new URL(uri.toString());
 
 
                 // Create the request to OpenWeatherMap, and open the connection
@@ -367,7 +348,7 @@ public class MovieDetailsFragment extends Fragment {
             LinearLayout layout;
             if(getActivity()==null)
                 return;
-                layout = (LinearLayout) getActivity().findViewById(R.id.reviews);
+            layout = (LinearLayout) getActivity().findViewById(R.id.reviews);
             if (reviews != null) {
                 for (int i = 0; i < reviews.size(); i++) {
                     String author = reviews.get(i).getAuthor();
@@ -407,7 +388,37 @@ public class MovieDetailsFragment extends Fragment {
 
     }
 
+    private Movie getMovieFromDb(long id){
+        Cursor cursor = db.query(FavouritesContract.FavouriteMovieEntry.TABLE_NAME,null, FavouritesContract.FavouriteMovieEntry.COLUMN_NAME_ID+ "=?",new String[]{String.valueOf(id)},null,null, null, null);
+        if (cursor != null) {
+            cursor.moveToFirst();
+        }
 
+        if(cursor.getCount()==0){
+            return null;
+        }
+        Movie movie = new Movie();
+        movie.setTitle(cursor.getString(cursor.getColumnIndex(FavouritesContract.FavouriteMovieEntry.COLUMN_NAME_TITLE)));
+        movie.setReleaseDate(cursor.getString(cursor.getColumnIndex(FavouritesContract.FavouriteMovieEntry.COLUMN_NAME_RELEASE_DATE)));
+        movie.setVoteAverage(Double.parseDouble(cursor.getString(cursor.getColumnIndex(FavouritesContract.FavouriteMovieEntry.COLUMN_NAME_VOTE_AVERAGE))));
+        movie.setOverview(cursor.getString(cursor.getColumnIndex(FavouritesContract.FavouriteMovieEntry.COLUMN_NAME_OVERVIEW)));
+        movie.setBackdropPath(cursor.getString(cursor.getColumnIndex(FavouritesContract.FavouriteMovieEntry.COLUMN_NAME_BACK_DROP_PATH)));
+        movie.setPosterPath(cursor.getString(cursor.getColumnIndex(FavouritesContract.FavouriteMovieEntry.COLUMN_NAME_POSTER_PATH)));
+        movie.setId(Long.parseLong(cursor.getString(cursor.getColumnIndex(FavouritesContract.FavouriteMovieEntry.COLUMN_NAME_ID))));
+        return movie;
+    }
+
+    private void insertMovie(Movie movie){
+        ContentValues values =  new ContentValues();
+        values.put(FavouritesContract.FavouriteMovieEntry.COLUMN_NAME_TITLE,movie.getTitle());
+        values.put(FavouritesContract.FavouriteMovieEntry.COLUMN_NAME_RELEASE_DATE,movie.getReleaseDate());
+        values.put(FavouritesContract.FavouriteMovieEntry.COLUMN_NAME_VOTE_AVERAGE,movie.getVoteAverage());
+        values.put(FavouritesContract.FavouriteMovieEntry.COLUMN_NAME_OVERVIEW,movie.getOverview());
+        values.put(FavouritesContract.FavouriteMovieEntry.COLUMN_NAME_BACK_DROP_PATH,movie.getBackdropPath());
+        values.put(FavouritesContract.FavouriteMovieEntry.COLUMN_NAME_POSTER_PATH,movie.getPosterPath());
+        values.put(FavouritesContract.FavouriteMovieEntry.COLUMN_NAME_ID,""+movie.getId());
+        db.insert(FavouritesContract.FavouriteMovieEntry.TABLE_NAME,null,values);
+    }
 
 
 

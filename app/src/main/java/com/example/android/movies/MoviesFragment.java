@@ -1,6 +1,8 @@
 package com.example.android.movies;
 
 
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -31,9 +33,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.realm.Realm;
-import io.realm.RealmConfiguration;
-import io.realm.RealmResults;
 
 
 public class MoviesFragment extends Fragment {
@@ -44,7 +43,8 @@ public class MoviesFragment extends Fragment {
     private static ArrayList<Object> favoritesAdapterArray = new ArrayList<Object>();
     private static AlertDialog alertDialog;
     private static GridView gridView;
-    Realm realm;
+    private SQLiteDatabase db;
+
 
     public MoviesFragment() {
         // Required empty public constructor
@@ -55,6 +55,8 @@ public class MoviesFragment extends Fragment {
 
         setHasOptionsMenu(true);
         super.onCreate(savedInstanceState);
+        FavouriteMovieDbHelper helperDB = new FavouriteMovieDbHelper(getContext());
+        db = helperDB.getReadableDatabase();
     }
 
     @Override
@@ -127,8 +129,8 @@ public class MoviesFragment extends Fragment {
 
 
 
-            return super.onOptionsItemSelected(item);
-        }
+        return super.onOptionsItemSelected(item);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -174,7 +176,7 @@ public class MoviesFragment extends Fragment {
             String jsonResponse = null;
 
             try {
-                Uri uri; 
+                Uri uri;
                 URL url;
                 if(((String)params[0]).equals("Top Rated")){
                     uri = Uri.parse("http://api.themoviedb.org/3/movie/top_rated").buildUpon().appendQueryParameter("api_key", com.example.android.movies.BuildConfig.API_KEY).build();
@@ -275,22 +277,14 @@ public class MoviesFragment extends Fragment {
         //favoritesAdapterArray.clear();
         gridView.setAdapter(favoritesAdapter);
 
-        RealmConfiguration realmConfig = new RealmConfiguration.Builder(getContext()).build();
-        Realm.setDefaultConfiguration(realmConfig);
 
-        // Get a Realm instance for this thread
-        realm = Realm.getDefaultInstance();
-
-        RealmResults<Movie> queryResults = realm.where(Movie.class).findAll();
-        queryResults.sort("id",true);
-        Object[] moviesArray =  queryResults.toArray();
-
+        ArrayList<Movie> movies = getFavouritesFromDB();
 
 
         favoritesAdapterArray.clear();
 
-        for(int i=0;i<moviesArray.length;i++){
-            favoritesAdapterArray.add(moviesArray[i]);
+        for(int i=0;i<movies.size();i++){
+            favoritesAdapterArray.add(movies.get(i));
         }
 
         favoritesAdapter.notifyDataSetChanged();
@@ -304,25 +298,40 @@ public class MoviesFragment extends Fragment {
     }
 
     public void updateFavoritesArray(){
-        RealmConfiguration realmConfig = new RealmConfiguration.Builder(getContext()).build();
-        Realm.setDefaultConfiguration(realmConfig);
+        gridView.setAdapter(favoritesAdapter);
 
-        // Get a Realm instance for this thread
-        realm = Realm.getDefaultInstance();
 
-        RealmResults<Movie> queryResults = realm.where(Movie.class).findAll();
-        queryResults.sort("id",true);
-        Object[] moviesArray =  queryResults.toArray();
-
+        ArrayList<Movie> movies = getFavouritesFromDB();
 
 
         favoritesAdapterArray.clear();
 
-        for(int i=0;i<moviesArray.length;i++){
-            favoritesAdapterArray.add(moviesArray[i]);
+        for(int i=0;i<movies.size();i++){
+            favoritesAdapterArray.add(movies.get(i));
         }
 
         favoritesAdapter.notifyDataSetChanged();
+    }
+
+    private ArrayList<Movie> getFavouritesFromDB(){
+        Cursor cursor = db.query(FavouritesContract.FavouriteMovieEntry.TABLE_NAME,null,null,null,null,null,
+                FavouritesContract.FavouriteMovieEntry.COLUMN_NAME_ID);
+        ArrayList<Movie> movies = new ArrayList<Movie>();
+
+        if(cursor.getCount()>0){
+            while(cursor.moveToNext()){
+                Movie movie = new Movie();
+                movie.setTitle(cursor.getString(cursor.getColumnIndex(FavouritesContract.FavouriteMovieEntry.COLUMN_NAME_TITLE)));
+                movie.setReleaseDate(cursor.getString(cursor.getColumnIndex(FavouritesContract.FavouriteMovieEntry.COLUMN_NAME_RELEASE_DATE)));
+                movie.setVoteAverage(Double.parseDouble(cursor.getString(cursor.getColumnIndex(FavouritesContract.FavouriteMovieEntry.COLUMN_NAME_VOTE_AVERAGE))));
+                movie.setOverview(cursor.getString(cursor.getColumnIndex(FavouritesContract.FavouriteMovieEntry.COLUMN_NAME_OVERVIEW)));
+                movie.setBackdropPath(cursor.getString(cursor.getColumnIndex(FavouritesContract.FavouriteMovieEntry.COLUMN_NAME_BACK_DROP_PATH)));
+                movie.setPosterPath(cursor.getString(cursor.getColumnIndex(FavouritesContract.FavouriteMovieEntry.COLUMN_NAME_POSTER_PATH)));
+                movie.setId(Long.parseLong(cursor.getString(cursor.getColumnIndex(FavouritesContract.FavouriteMovieEntry.COLUMN_NAME_ID))));
+                movies.add(movie);
+            }
+        }
+        return movies;
     }
 
 }
