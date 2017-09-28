@@ -1,6 +1,9 @@
 package com.example.android.movies;
 
+import android.net.Uri;
 import android.provider.BaseColumns;
+
+import java.net.URI;
 
 /**
  * Created by New on 9/26/2017.
@@ -8,9 +11,16 @@ import android.provider.BaseColumns;
 
 public final class FavouritesContract {
 
+    public static final String AUTHORITY = "com.example.android.movies.FavouritesContentProvider";
+    public static final Uri BASE_CONTENT_URI = Uri.parse("content://"+AUTHORITY);
+    public static final String PATH_FAVOURITES = "favouriteMovie";
+
     private FavouritesContract() {}
 
     public static class FavouriteMovieEntry implements BaseColumns {
+
+
+        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_FAVOURITES).build();
 
         public static final String TABLE_NAME = "favouriteMovie" ;
         public static final String COLUMN_NAME_TITLE = "title" ;

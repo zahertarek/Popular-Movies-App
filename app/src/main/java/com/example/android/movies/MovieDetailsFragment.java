@@ -43,7 +43,7 @@ public class MovieDetailsFragment extends Fragment {
     List<Trailer> trailers;
     List<Review> reviews;
     Result result;
-    SQLiteDatabase db;
+
 
 
 
@@ -58,8 +58,6 @@ public class MovieDetailsFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_movie_details_fragment, container, false);
-        FavouriteMovieDbHelper helper = new FavouriteMovieDbHelper(getContext());
-        db = helper.getWritableDatabase();
 
 
         //Getting the selected Movie Object
@@ -147,7 +145,7 @@ public class MovieDetailsFragment extends Fragment {
                     insertMovie(favoriteMovie);
                     star.setImageResource(android.R.drawable.btn_star_big_on);
                 }else{
-                    db.delete(FavouritesContract.FavouriteMovieEntry.TABLE_NAME, FavouritesContract.FavouriteMovieEntry.COLUMN_NAME_ID+"="+movie.getId(),null);
+                   getContext().getContentResolver().delete(Uri.withAppendedPath(FavouritesContract.FavouriteMovieEntry.CONTENT_URI,""+movie.getId()),null,null);
                     star.setImageResource(android.R.drawable.btn_star_big_off);
                 }
                 MoviesFragment moviesFragment = (MoviesFragment)getActivity().getSupportFragmentManager().findFragmentById(R.id.movies_fragment);
@@ -389,7 +387,7 @@ public class MovieDetailsFragment extends Fragment {
     }
 
     private Movie getMovieFromDb(long id){
-        Cursor cursor = db.query(FavouritesContract.FavouriteMovieEntry.TABLE_NAME,null, FavouritesContract.FavouriteMovieEntry.COLUMN_NAME_ID+ "=?",new String[]{String.valueOf(id)},null,null, null, null);
+        Cursor cursor = getContext().getContentResolver().query(Uri.withAppendedPath(FavouritesContract.FavouriteMovieEntry.CONTENT_URI,""+id),null,null,null,null);
         if (cursor != null) {
             cursor.moveToFirst();
         }
@@ -417,7 +415,7 @@ public class MovieDetailsFragment extends Fragment {
         values.put(FavouritesContract.FavouriteMovieEntry.COLUMN_NAME_BACK_DROP_PATH,movie.getBackdropPath());
         values.put(FavouritesContract.FavouriteMovieEntry.COLUMN_NAME_POSTER_PATH,movie.getPosterPath());
         values.put(FavouritesContract.FavouriteMovieEntry.COLUMN_NAME_ID,""+movie.getId());
-        db.insert(FavouritesContract.FavouriteMovieEntry.TABLE_NAME,null,values);
+        Uri uri = getContext().getContentResolver().insert(FavouritesContract.FavouriteMovieEntry.CONTENT_URI,values);
     }
 
 

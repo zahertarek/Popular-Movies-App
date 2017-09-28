@@ -43,7 +43,7 @@ public class MoviesFragment extends Fragment {
     private static ArrayList<Object> favoritesAdapterArray = new ArrayList<Object>();
     private static AlertDialog alertDialog;
     private static GridView gridView;
-    private SQLiteDatabase db;
+
 
 
     public MoviesFragment() {
@@ -55,8 +55,7 @@ public class MoviesFragment extends Fragment {
 
         setHasOptionsMenu(true);
         super.onCreate(savedInstanceState);
-        FavouriteMovieDbHelper helperDB = new FavouriteMovieDbHelper(getContext());
-        db = helperDB.getReadableDatabase();
+
     }
 
     @Override
@@ -314,8 +313,7 @@ public class MoviesFragment extends Fragment {
     }
 
     private ArrayList<Movie> getFavouritesFromDB(){
-        Cursor cursor = db.query(FavouritesContract.FavouriteMovieEntry.TABLE_NAME,null,null,null,null,null,
-                FavouritesContract.FavouriteMovieEntry.COLUMN_NAME_ID);
+        Cursor cursor = getContext().getContentResolver().query(FavouritesContract.FavouriteMovieEntry.CONTENT_URI,null,null,null,null);
         ArrayList<Movie> movies = new ArrayList<Movie>();
 
         if(cursor.getCount()>0){
