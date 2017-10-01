@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,6 +44,8 @@ public class MovieDetailsFragment extends Fragment {
     List<Trailer> trailers;
     List<Review> reviews;
     Result result;
+    ScrollView scrollView;
+
 
 
 
@@ -59,6 +62,7 @@ public class MovieDetailsFragment extends Fragment {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_movie_details_fragment, container, false);
 
+        scrollView = (ScrollView) rootView.findViewById(R.id.movie_details_scroll_view);
 
         //Getting the selected Movie Object
         Intent intent = getActivity().getIntent();
@@ -156,11 +160,20 @@ public class MovieDetailsFragment extends Fragment {
             }
         });
 
+        if(savedInstanceState!=null){
+            scrollView.setScrollY(savedInstanceState.getInt("state"));
+        }
 
 
 
         return rootView;
 
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt("state",scrollView.getScrollY());
     }
 
     public class FetchTrailersTask extends AsyncTask<String,Void,List<Trailer>>{

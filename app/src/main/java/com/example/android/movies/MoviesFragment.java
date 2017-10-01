@@ -1,14 +1,18 @@
 package com.example.android.movies;
 
 
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.preference.PreferenceManager;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -43,6 +47,9 @@ public class MoviesFragment extends Fragment {
     private static ArrayList<Object> favoritesAdapterArray = new ArrayList<Object>();
     private static AlertDialog alertDialog;
     private static GridView gridView;
+    private RecyclerView.LayoutManager layoutManager;
+    Parcelable state;
+
 
 
 
@@ -55,21 +62,45 @@ public class MoviesFragment extends Fragment {
 
         setHasOptionsMenu(true);
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable("state",gridView.onSaveInstanceState());
+    }
+
+
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
     }
+
 
     @Override
     public void onResume() {
         super.onResume();
-        String preference = PreferenceManager.getDefaultSharedPreferences(getContext()).getString("SortBy","Most Popular");
+        String preference = PreferenceManager.getDefaultSharedPreferences(getContext()).getString("SortBy", "Most Popular");
+        switch (preference) {
+            case "Most Popular":
+                ;
+            case "Top Rated":
+                updateData();
+                break;
+            case "Favorites":
+                getFavorites();
+                break;
 
-        switch(preference){
-            case "Most Popular":;
-            case "Top Rated": updateData();break;
-            case "Favorites": getFavorites();break;
         }
-
     }
+
+
+
+
+
+
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -138,6 +169,10 @@ public class MoviesFragment extends Fragment {
         String preference = PreferenceManager.getDefaultSharedPreferences(getContext()).getString("SortBy","Most Popular");
         gridView = (GridView) rootView.findViewById(R.id.mainGridView);
 
+        if(savedInstanceState!=null)
+        state = savedInstanceState.getParcelable("state");
+
+
         // initializing the adapter
         adapter   = new CustomAdapter(getActivity(),adapterArray);
         favoritesAdapter = new FavoritesAdapter(getActivity(),favoritesAdapterArray);
@@ -160,6 +195,7 @@ public class MoviesFragment extends Fragment {
         sortByDialog.setView(R.layout.sortby_dialogue_box);
         sortByDialog.setCancelable(true);
         alertDialog = sortByDialog.create();
+
 
         return rootView ;
     }
@@ -252,6 +288,8 @@ public class MoviesFragment extends Fragment {
             }
 
             gridView.setAdapter(adapter);
+            if(state!=null)
+            gridView.onRestoreInstanceState(state);
         }
 
         // PArsing the json response using Gson
